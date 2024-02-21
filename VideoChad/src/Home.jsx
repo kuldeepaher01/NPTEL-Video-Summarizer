@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import Navbar from "./Components/Navbar";
 import Alert from "./Components/Alert";
+import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
 const HomePage = () => {
@@ -23,14 +24,16 @@ const HomePage = () => {
 		return userInput.match(youtubePattern);
 	};
 
-	const handleSendClick = () => {
+	const handleSendClick = async () => {
 		if (isValidYouTubeURL()) {
 			setAlert({ state: false, type: "", message: "" });
-			const response = axios.post("http://localhost:5000/init", {
+			const response = await axios.post("http://localhost:5000/init", {
 				yt_link: userInput,
 			});
 			console.log("Sent YT link :)", response);
-			navigate("/app", { state: { videoLink: userInput } });
+			navigate("/app", {
+				state: { videoLink: userInput, metaData: response.data.metadata.title },
+			});
 		} else {
 			setAlert({
 				state: true,

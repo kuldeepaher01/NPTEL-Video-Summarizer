@@ -3,15 +3,15 @@ import { useNavigate, useLocation } from "react-router-dom";
 import Navbar from "./Components/Navbar";
 import axios from "axios";
 import YouTube from "react-youtube";
-import YoutubeC from "./Components/YoutubeC";
-import YoutubeC from "./Components/YoutubeC";
 
 function App() {
 	const navigate = useNavigate();
 	const [messages, setMessages] = useState([]);
 	const [userInput, setUserInput] = useState("");
+	const [timestamps, setTimestamps] = useState([]);
 	const location = useLocation();
 	const videoLink = location.state?.videoLink;
+	const metaData = location.state?.metaData;
 	const [videoId, setVideoId] = useState("");
 	const endOfMessagesRef = useRef(null);
 	const [player, setPlayer] = React.useState(null);
@@ -72,10 +72,13 @@ function App() {
 				query: userInput,
 				chat_history: formattedMessages,
 			});
+			console.log("Answer", response.data.answer);
+			console.log("Time sta", response.data.timestamps);
+			setTimestamps(response.data.timestamps);
 			setMessages([
 				...messages,
 				{ role: "user", content: userInput },
-				{ role: "assistant", content: response.data.assistant_message },
+				{ role: "assistant", content: response.data.answer },
 			]);
 
 			console.log(messages);
@@ -100,17 +103,17 @@ function App() {
 			</div>
 			<div id="chat-ui" className="grid grid-cols-2 divide-x-2 h-5/6">
 				<div className="flex flex-col  lg:col-span-1 col-span-2">
-					<div className="w-full h-96">
+					<div className=" w-full h-96 justify-center items-center">
 						<h1 className="text-gray-800 font-semibold text-2xl ml-2 mt-2">
-							Youtube Video
+							{metaData}
 						</h1>
 
 						<YouTube
-							className="w-full h-full p-2"
+							className="flex w-full h-full p-2 justify-center items-center"
 							videoId={videoId}
 							opts={{
 								width: "100%",
-								height: "100%",
+								height: "120%",
 								playerVars: {
 									autoplay: 0,
 									start: 40,
@@ -143,14 +146,34 @@ function App() {
 							{messages.map((msg, idx) => (
 								<div
 									key={idx}
-									className={`${
+									className={` ${
 										msg.role === "user"
-											? "text-indigo-600 font-bold"
-											: "text-gray-700 "
+											? "text-indigo-600 font-bold mt-3"
+											: "text-gray-700  "
 									}`}
 									ref={idx === messages.length - 1 ? endOfMessagesRef : null}
 								>
 									{msg.content}
+									{/* Show buttopns of 3 timestamps  */}
+									{msg.role === "assistant" && (
+										<div className="flex space-x-4 mt-2">
+											{timestamps.map((time, idx) => (
+												<button
+													key={idx}
+													className="bg-indigo-200 hover:bg-indigo-400  text-white py-1 px-3 rounded-lg"
+													onClick={() => {
+														if (player) {
+															player.seekTo(time);
+															player.pauseVideo();
+														}
+													}}
+												>
+													{"Ref "}
+													{idx + 1}
+												</button>
+											))}
+										</div>
+									)}
 								</div>
 							))}
 							{loading && (
