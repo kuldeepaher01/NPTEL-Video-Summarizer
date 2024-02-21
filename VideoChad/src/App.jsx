@@ -5,6 +5,7 @@ import axios from "axios";
 import "./App.css";
 import YouTube from "react-youtube";
 import YoutubeC from "./Components/YoutubeC";
+import YoutubeC from "./Components/YoutubeC";
 
 function App() {
 	const navigate = useNavigate();
@@ -47,6 +48,7 @@ function App() {
 			return watchUrl.replace("/watch?v=", "/embed/");
 		}
 		if (videoLink) {
+			// setEmbedLink(convertToEmbedUrl(videoLink));
 			// setEmbedLink(convertToEmbedUrl(videoLink));
 			setVideoId(videoLink.split("v=")[1]);
 			console.log(videoId);
