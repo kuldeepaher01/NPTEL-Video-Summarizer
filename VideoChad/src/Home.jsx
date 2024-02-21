@@ -109,6 +109,7 @@ const HomePage = () => {
 								out to the learners and provide them with the opportunity to
 								learn from the best.
 							</p>
+
 							{/* This is an AI tool which will help you summarise long NPTEL educational Videos ndd then Chat with them, write how this will help in learning and understanding */}
 							<h1 className=" text-5xl font-bold text-gray-900 sm:text-3xl mt-2">
 								How will this tool help you?

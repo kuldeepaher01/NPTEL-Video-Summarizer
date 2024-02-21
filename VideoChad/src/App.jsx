@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import Navbar from "./Components/Navbar";
 import axios from "axios";
-import "./App.css";
 import YouTube from "react-youtube";
 
 function App() {
@@ -45,6 +44,7 @@ function App() {
 			console.log("Sending message...");
 			setLoading(true);
 
+			
 			const response = await axios.post("http://localhost:5000/message", {
 				prompt: userInput,
 			});
@@ -72,11 +72,11 @@ function App() {
 			<Navbar />
 			<div className="flex">
 				{/* YouTube Video Player */}
-				<div className="w-1/2 bg-white">
-					<div className="p-4">
-						<h1></h1>
+				<div className="w-1/2 bg-white flex items-center justify-center">
+					<div className="w-full p-5">
+					<h1></h1>
 						<YouTube
-							className="w-full h-96"
+							className="w-full h-64 md:h-96"
 							videoId={videoId}
 							opts={{
 								width: "100%",
