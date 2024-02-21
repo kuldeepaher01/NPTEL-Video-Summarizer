@@ -3,16 +3,32 @@ import { useNavigate, useLocation } from "react-router-dom";
 import Navbar from "./Components/Navbar";
 import axios from "axios";
 import YouTube from "react-youtube";
+import YoutubeC from "./Components/YoutubeC";
+import YoutubeC from "./Components/YoutubeC";
 
 function App() {
 	const navigate = useNavigate();
 	const [messages, setMessages] = useState([]);
 	const [userInput, setUserInput] = useState("");
-	const location = useLocation(); // Access the location object
-	const videoLink = location.state?.videoLink; // Access the videoLink from the state
-	const [embedLink, setEmbedLink] = useState("");
+	const location = useLocation();
+	const videoLink = location.state?.videoLink;
 	const [videoId, setVideoId] = useState("");
 	const endOfMessagesRef = useRef(null);
+	const [player, setPlayer] = React.useState(null);
+
+	const handleClick = () => {
+		console.log("Clicked");
+		if (player) {
+			player.seekTo(120);
+			player.pauseVideo();
+			console.log("Seeking to  120");
+		}
+	};
+
+	const onPlayerReady = (event) => {
+		setPlayer(event.target);
+		console.log("Player is ready");
+	};
 	const scrollToBottom = () => {
 		if (endOfMessagesRef.current) {
 			endOfMessagesRef.current.scrollIntoView({ behavior: "smooth" });
@@ -31,10 +47,11 @@ function App() {
 			return watchUrl.replace("/watch?v=", "/embed/");
 		}
 		if (videoLink) {
-			setEmbedLink(convertToEmbedUrl(videoLink));
+			// setEmbedLink(convertToEmbedUrl(videoLink));
+			// setEmbedLink(convertToEmbedUrl(videoLink));
 			setVideoId(videoLink.split("v=")[1]);
+			console.log(videoId);
 		} else {
-			// reddirect to home page
 			navigate("/");
 		}
 	}, []);
@@ -43,16 +60,25 @@ function App() {
 		try {
 			console.log("Sending message...");
 			setLoading(true);
-
-			
-			const response = await axios.post("http://localhost:5000/message", {
-				prompt: userInput,
+			let formattedMessages = [];
+			for (let i = 0; i < messages.length; i += 2) {
+				let message = [];
+				message.push(messages[i].content);
+				message.push(messages[i + 1].content);
+				formattedMessages.push(message);
+			}
+			console.log("Formatted", formattedMessages);
+			const response = await axios.post("http://localhost:5000/response", {
+				query: userInput,
+				chat_history: formattedMessages,
 			});
 			setMessages([
 				...messages,
 				{ role: "user", content: userInput },
 				{ role: "assistant", content: response.data.assistant_message },
 			]);
+
+			console.log(messages);
 			setUserInput("");
 			setLoading(false);
 		} catch (error) {
@@ -68,36 +94,50 @@ function App() {
 	};
 
 	return (
-		<div>
-			<Navbar />
-			<div className="flex">
-				{/* YouTube Video Player */}
-				<div className="w-1/2 bg-white flex items-center justify-center">
-					<div className="w-full p-5">
-					<h1></h1>
+		<div id="App" className="w-full h-screen">
+			<div>
+				<Navbar />
+			</div>
+			<div id="chat-ui" className="grid grid-cols-2 divide-x-2 h-5/6">
+				<div className="flex flex-col  lg:col-span-1 col-span-2">
+					<div className="w-full h-96">
+						<h1 className="text-gray-800 font-semibold text-2xl ml-2 mt-2">
+							Youtube Video
+						</h1>
+
 						<YouTube
-							className="w-full h-64 md:h-96"
+							className="w-full h-full p-2"
 							videoId={videoId}
 							opts={{
 								width: "100%",
+								height: "100%",
 								playerVars: {
-									autoplay: 1,
+									autoplay: 0,
+									start: 40,
 								},
 							}}
+							onReady={onPlayerReady}
 						/>
+
+						<div className="flex justify-center items-center mt-2">
+							<button
+								className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg"
+								onClick={handleClick}
+							>
+								Take me to Quiz
+							</button>
+						</div>
 					</div>
 				</div>
-				{/* add a vertical separator here */}
-				<div>
-					<div className="border-r-2 border-gray-300 h-screen"></div>
-				</div>
 
-				<div className="w-1/2 bg-white">
-					<div className=" p-6">
-						<h1 className="text-2xl font-bold">Chat with Video!</h1>
+				<div className="flex flex-col p-2  justify-between lg:col-span-1 col-span-2 overflow-auto">
+					<div className="flex items-center justify-start flex-col max-h-3/5">
+						<h1 className="p-2 text-2xl text-gray-800 font-semibold">
+							Chat with the VideoChad
+						</h1>
 						<div
 							ref={endOfMessagesRef}
-							className="mt-4 overflow-y-auto max-h-96 mb-10 border border-gray-300 rounded-md p-4 bg-gray-100"
+							className="flex flex-col m-4 overflow-y-scroll w-full max-h-4/5 border text-xl border-gray-300 rounded-md p-4 bg-gray-100"
 							id="chat-message"
 						>
 							{messages.map((msg, idx) => (
@@ -105,8 +145,8 @@ function App() {
 									key={idx}
 									className={`${
 										msg.role === "user"
-											? "text-indigo-600 font-semibold"
-											: "text-gray-700"
+											? "text-indigo-600 font-bold"
+											: "text-gray-700 "
 									}`}
 									ref={idx === messages.length - 1 ? endOfMessagesRef : null}
 								>
@@ -114,30 +154,31 @@ function App() {
 								</div>
 							))}
 							{loading && (
-								<div className="text-green-400 typing">Getting response...</div>
+								<div className="text-green-400">Getting response...</div>
 							)}
 						</div>
-						<div
-							className=" mb-4 flex sticky bottom-0 bg-white"
-							id="chat-input"
+					</div>
+					<div
+						className="mt-2 p-4 absolute bottom-0 w-full bg-white"
+						id="chat-input"
+						style={{ position: "sticky", bottom: 0 }}
+					>
+						<input
+							value={userInput}
+							onChange={(e) => setUserInput(e.target.value)}
+							onKeyPress={handleKeyPress}
+							placeholder="Type your query here..."
+							className="flex-grow w-5/6 px-16 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:border-indigo-500"
+						/>
+						<button
+							onClick={sendMessage}
+							className={`ml-2 px-4 py-2 bg-indigo-600 text-white rounded-md font-semibold text-lg hover:bg-indigo-700 focus:outline-none focus:ring ${
+								loading && "cursor-not-allowed opacity-35"
+							}`}
+							disabled={loading}
 						>
-							<input
-								value={userInput}
-								onChange={(e) => setUserInput(e.target.value)}
-								onKeyPress={handleKeyPress}
-								placeholder="Type your query here..."
-								className="flex-grow px-2 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:border-indigo-500"
-							/>
-							<button
-								onClick={sendMessage}
-								className={`ml-2 px-4 py-2 bg-indigo-600 text-white rounded-md font-semibold text-lg hover:bg-indigo-700 focus:outline-none focus:ring ${
-									loading && "cursor-not-allowed opacity-35"
-								}`}
-								disabled={loading}
-							>
-								Send
-							</button>
-						</div>
+							Send
+						</button>
 					</div>
 				</div>
 			</div>

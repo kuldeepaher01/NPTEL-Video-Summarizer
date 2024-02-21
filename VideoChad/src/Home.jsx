@@ -26,6 +26,10 @@ const HomePage = () => {
 	const handleSendClick = () => {
 		if (isValidYouTubeURL()) {
 			setAlert({ state: false, type: "", message: "" });
+			const response = axios.post("http://localhost:5000/init", {
+				yt_link: userInput,
+			});
+			console.log("Sent YT link :)", response);
 			navigate("/app", { state: { videoLink: userInput } });
 		} else {
 			setAlert({
