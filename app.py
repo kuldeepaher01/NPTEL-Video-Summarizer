@@ -162,9 +162,12 @@ def initialize():
     if valid:
         metadata = get_metadata(id)
         save_transcript(id)
+
         # Initialize qna_chain for the user
-        # session['qna_chain'] = load_db("./transcript.txt", 'stuff',  5)
         qna_chain = load_db("./transcript.txt", 'stuff',  5)
+
+        os.remove('./transcript.txt')
+        
         return jsonify({"status": "success", "message": "qna_chain initialized.",
                         "metadata": metadata})
     else:
@@ -182,28 +185,25 @@ def response():
     
     req = request.get_json()
     raw = req.get('chat_history', [])
+
     # raw is a list of list containing two strings convert that into a list of tuples
     if len(raw) > 0:
         chat_history = [tuple(x) for x in raw]
     else:
         chat_history = []
-    print(f"Chat History: {chat_history}")
+    # print(f"Chat History: {chat_history}")
     
     memory = chat_history
     query = req.get('query', '')
     print(f"Query: {query}")
 
-    # qna_chain = session.get('qna_chain', None)
-    
     if memory is None:
         memory = []
-    
-    
     
     if qna_chain is None:
         return jsonify({"status": "error", "message": "qna_chain not initialized."}),  400
 
-    response = qna_chain({'question': query, 'chat_history': memory})
+    response = qna_chain({'question': query, 'chat_history': buffer(memory,7)})
 
     if response['source_documents']:
         pattern = r'~(\d+)~'

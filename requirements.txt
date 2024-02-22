@@ -1,6 +1,5 @@
 Flask==3.0.2
 Flask_Cors==4.0.0
-flask_session==0.6.0
 langchain==0.1.8
 langchain_community==0.0.21
 langchain_openai==0.0.6

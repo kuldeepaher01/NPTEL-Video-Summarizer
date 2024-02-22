@@ -64,7 +64,7 @@ const HomePage = () => {
 										Welcome to Video Chad!
 									</h1>
 
-									<p className="mt-1.5 text-md text-gray-500">
+									<p className="mt-1.5 text-lg text-gray-500">
 										Chat with NPTEL videos! 🎉
 									</p>
 								</div>
@@ -107,7 +107,7 @@ const HomePage = () => {
 								What is NPTEL?
 							</h1>
 
-							<p className="mt-1.5 text-md text-gray-500 text-justify">
+							<p className="mt-1.5 text-lg text-gray-500 text-justify">
 								NPTEL is a joint initiative of the IITs and IISc. Through this
 								initiative, we offer online courses and certification in various
 								topics. We believe that access to knowledge and opportunities is
@@ -121,7 +121,7 @@ const HomePage = () => {
 							<h1 className=" text-5xl font-bold text-gray-900 sm:text-3xl mt-2">
 								How will this tool help you?
 							</h1>
-							<p className="mt-1.5 text-md text-gray-500 text-justify">
+							<p className="mt-1.5 text-lg text-gray-500 text-justify">
 								This tool will help you summarise long NPTEL educational Videos
 								and then Chat with them. This will help in learning and
 								understanding the content in a better way.{" "}
