@@ -14,6 +14,8 @@ const HomePage = () => {
 		message: "",
 	});
 
+	const [isLoading, setIsLoading] = useState(false); // New state for loading
+
 	const handleInputChange = (e) => {
 		setUserInput(e.target.value);
 	};
@@ -27,13 +29,25 @@ const HomePage = () => {
 	const handleSendClick = async () => {
 		if (isValidYouTubeURL()) {
 			setAlert({ state: false, type: "", message: "" });
-			const response = await axios.post("http://localhost:5000/init", {
-				yt_link: userInput,
-			});
-			console.log("Sent YT link :)", response);
-			navigate("/app", {
-				state: { videoLink: userInput, metaData: response.data.metadata.title },
-			});
+			setIsLoading(true); // Set loading to true before making the request
+			try {
+				const response = await axios.post("http://localhost:5000/init", {
+					yt_link: userInput,
+				});
+				console.log("Sent YT link :)", response);
+				navigate("/app", {
+					state: { videoLink: userInput, metaData: response.data.metadata.title },
+				});
+			} catch (error) {
+				console.error("Error sending YT link:", error);
+				setAlert({
+					state: true,
+					type: "danger",
+					message: "Error processing your request. Please try again.",
+				});
+			} finally {
+				setIsLoading(false); // Set loading to false after receiving the response or if there's an error
+			}
 		} else {
 			setAlert({
 				state: true,
@@ -54,7 +68,15 @@ const HomePage = () => {
 					timer={5000}
 				/>
 			)}
-			<div className={`${alert.state ? "opacity-40 cursor-not-allowed" : ""}`}>
+
+			{/* Loading overlay */}
+            {isLoading && (
+					<div className="fixed inset-0 bg-white bg-opacity-50 text-center mt-16 flex items-center justify-center z-50">
+						<div className="animate-spin rounded-full h-40 w-40 border-t-2 border-b-2 border-purple-500"></div>
+					</div>
+				)}
+
+			<div className={`${alert.state ? "opacity-40 cursor-not-allowed mt-16" : ""}`}>
 				<div id="info">
 					<header className="bg-gray-50">
 						<div className="mx-auto max-w-screen-xl m-4">

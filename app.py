@@ -1,5 +1,5 @@
 
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 # from flask_session import Session
 from flask_cors import CORS  # <-- New import here
 from flask_cors import cross_origin
@@ -18,12 +18,20 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder="E:/VC/Final VideoChat/NPTEL-Video-Summarizer/VideoChad/dist")
 CORS(app, resources={r"/*": {"origins": "*"}}) 
 openai.api_key = os.environ["OPENAI_API_KEY"]
 llm_name = "gpt-3.5-turbo"
 qna_chain = None
 
+
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def serve(path):
+    if path != "" and os.path.exists(app.static_folder + '/' + path):
+        return send_from_directory(app.static_folder, path)
+    else:
+        return send_from_directory(app.static_folder, 'index.html')
 
 def load_db(file, chain_type, k):
     """
@@ -168,8 +176,10 @@ def initialize():
 
         os.remove('./transcript.txt')
         
-        return jsonify({"status": "success", "message": "qna_chain initialized.",
-                        "metadata": metadata})
+        return jsonify({"status": "success", 
+                        "message": "qna_chain initialized.",
+                        "metadata": metadata,
+                        })
     else:
         return jsonify({"status": "error", "message": "Invalid YouTube link."})
 

@@ -111,7 +111,7 @@ const Alert = ({ message, type, timer, setState, relod }) => {
 							</svg>
 						)}
 					</div>
-					<div className="px-4 py-6 bg-white rounded-r-lg flex justify-between items-center w-full border border-l-transparent border-gray-200">
+					<div className="px-4 py-4 bg-white rounded-r-lg flex justify-between items-center w-full border border-l-transparent border-gray-200">
 						<div>{message}</div>
 						<button onClick={dismissAlert}>
 							<svg
