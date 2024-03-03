@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import Navbar from "./Components/Navbar";
 import axios from "axios";
 import YouTube from "react-youtube";
+import Markdown from "react-markdown";
 
 function App() {
 	const navigate = useNavigate();
@@ -52,7 +53,7 @@ function App() {
 			setVideoId(videoLink.split("v=")[1]);
 			console.log(videoId);
 		} else {
-			navigate("/");
+			// navigate("/");
 		}
 	}, []);
 
@@ -95,6 +96,8 @@ function App() {
 			e.preventDefault(); // To prevent any default behavior, such as a line break in a textarea
 		}
 	};
+	const markdown =
+		"### Love **is** bold \n This text is ___really important___.";
 
 	return (
 		<div id="App" className="w-full h-screen">
@@ -136,13 +139,16 @@ function App() {
 				<div className="flex flex-col p-2  justify-between lg:col-span-1 col-span-2 overflow-auto">
 					<div className="flex items-center justify-start flex-col max-h-3/5">
 						<h1 className="p-2 text-2xl text-gray-800 font-semibold">
-						📺 Chat with the Video 📺
+							📺 Chat with the Video 📺
 						</h1>
 						<div
 							ref={endOfMessagesRef}
 							className="flex flex-col m-4 overflow-y-scroll w-full max-h-4/5 border text-xl border-gray-300 rounded-md p-4 bg-gray-100"
 							id="chat-message"
 						>
+							<div>
+								<Markdown>{markdown}</Markdown>
+							</div>
 							{messages.map((msg, idx) => (
 								<div
 									key={idx}
@@ -153,7 +159,7 @@ function App() {
 									}`}
 									ref={idx === messages.length - 1 ? endOfMessagesRef : null}
 								>
-									{msg.content}
+									<Markdown>{msg.content}</Markdown>
 									{/* Show buttopns of 3 timestamps  */}
 									{msg.role === "assistant" && (
 										<div className="flex space-x-4 mt-2">
@@ -176,39 +182,37 @@ function App() {
 									)}
 								</div>
 							))}
-							
 						</div>
-						
 					</div>
 					<div
 						className="mt-16 p-4 absolute w-full bg-white"
 						id="chat-input"
 						style={{ position: "sticky", bottom: 0 }}
 					>
-					<div className="flex items-center justify-end w-full">
-						<input
-							value={userInput}
-							onChange={(e) => setUserInput(e.target.value)}
-							onKeyPress={handleKeyPress}
-							placeholder="🤔 Ask me anything! ... "
-							className="flex-grow w-5/6 px-16 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:border-indigo-500"
-						/>
-						{loading && (
-							<div style={{ position: 'relative', right: '640px', top: '50%' }} className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-purple-500"></div>
-						)}
-						<button
-							onClick={sendMessage}
-							className={`px-2.5 py-2.5 bg-indigo-600 text-white rounded-md font-semibold text-lg hover:bg-indigo-700 focus:outline-none focus:ring ${
-							loading && "cursor-not-allowed opacity-35"
-							}`}
-							disabled={loading}
-						>
-							📤Send
-						</button>
+						<div className="flex items-center justify-end w-full">
+							<input
+								value={userInput}
+								onChange={(e) => setUserInput(e.target.value)}
+								onKeyPress={handleKeyPress}
+								placeholder="🤔 Ask me anything! ... "
+								className="flex-grow w-5/6 px-16 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:border-indigo-500"
+							/>
+							{loading && (
+								<div
+									style={{ position: "relative", right: "640px", top: "50%" }}
+									className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-purple-500"
+								></div>
+							)}
+							<button
+								onClick={sendMessage}
+								className={`px-2.5 py-2.5 bg-indigo-600 text-white rounded-md font-semibold text-lg hover:bg-indigo-700 focus:outline-none focus:ring ${
+									loading && "cursor-not-allowed opacity-35 "
+								}`}
+								disabled={loading}
+							>
+								📤Send
+							</button>
 						</div>
-						
-
-						
 					</div>
 				</div>
 			</div>

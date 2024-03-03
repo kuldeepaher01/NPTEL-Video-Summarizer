@@ -25,18 +25,30 @@ const HomePage = () => {
 			/^(https?:\/\/)?(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/)[\w-]{11}(&\S*)?$/;
 		return userInput.match(youtubePattern);
 	};
+	function extractYouTubeVideoUrl(url) {
+		const regex = /^(https:\/\/www\.youtube\.com\/watch\?v=[^&]+)/;
+		const match = url.match(regex);
+		return match ? match[1] : null;
+	}
 
 	const handleSendClick = async () => {
 		if (isValidYouTubeURL()) {
+			// If the input is a valid YouTube URL
+			// Extract the video ID from the URL
+			const videoId = extractYouTubeVideoUrl(userInput);
+			setUserInput(videoId);
 			setAlert({ state: false, type: "", message: "" });
 			setIsLoading(true); // Set loading to true before making the request
 			try {
 				const response = await axios.post("http://localhost:5000/init", {
-					yt_link: userInput,
+					yt_link: videoId,
 				});
 				console.log("Sent YT link :)", response);
 				navigate("/app", {
-					state: { videoLink: userInput, metaData: response.data.metadata.title },
+					state: {
+						videoLink: videoId,
+						metaData: response.data.metadata.title,
+					},
 				});
 			} catch (error) {
 				console.error("Error sending YT link:", error);
@@ -70,13 +82,17 @@ const HomePage = () => {
 			)}
 
 			{/* Loading overlay */}
-            {isLoading && (
-					<div className="fixed inset-0 bg-white bg-opacity-50 text-center mt-16 flex items-center justify-center z-50">
-						<div className="animate-spin rounded-full h-40 w-40 border-t-2 border-b-2 border-purple-500"></div>
-					</div>
-				)}
+			{isLoading && (
+				<div className="fixed inset-0 bg-white bg-opacity-50 text-center mt-16 flex items-center justify-center z-50">
+					<div className="animate-spin rounded-full h-40 w-40 border-t-2 border-b-2 border-purple-500"></div>
+				</div>
+			)}
 
-			<div className={`${alert.state ? "opacity-40 cursor-not-allowed mt-16" : ""}`}>
+			<div
+				className={`${
+					alert.state ? "opacity-40 cursor-not-allowed mt-16" : ""
+				}`}
+			>
 				<div id="info">
 					<header className="bg-gray-50">
 						<div className="mx-auto max-w-screen-xl m-4">
