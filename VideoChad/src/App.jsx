@@ -96,8 +96,35 @@ function App() {
 			e.preventDefault(); // To prevent any default behavior, such as a line break in a textarea
 		}
 	};
-	const markdown =
-		"### Love **is** bold \n This text is ___really important___.";
+	const markdown = "";
+
+	useEffect(() => {
+		async function fetchSummary() {
+			try {
+				console.log("Formatted", formattedMessages);
+				setUserInput("Summarize the video for me!");
+				const response = await axios.post("http://localhost:5000/response", {
+					query: "Summarize the video for me!",
+					chat_history: formattedMessages,
+				});
+				console.log("Answer", response.data.answer);
+				console.log("Time stamp", response.data.timestamps);
+				setTimestamps(response.data.timestamps);
+				setMessages([
+					...messages,
+					{ role: "user", content: userInput },
+					{ role: "assistant", content: response.data.answer },
+				]);
+
+				console.log(messages);
+				setUserInput("");
+				setLoading(false);
+			} catch (error) {
+				console.log(error);
+			}
+		}
+		fetchSummary();
+	}, []);
 
 	return (
 		<div id="App" className="w-full h-screen">
@@ -125,14 +152,14 @@ function App() {
 							onReady={onPlayerReady}
 						/>
 
-						<div className="flex justify-center items-center mt-32">
+						{/* <div className="flex justify-center items-center mt-32">
 							<button
 								className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-2.5 rounded-lg"
 								onClick={handleClick}
 							>
 								Quiz Me! ⭐🧐
 							</button>
-						</div>
+						</div> */}
 					</div>
 				</div>
 
