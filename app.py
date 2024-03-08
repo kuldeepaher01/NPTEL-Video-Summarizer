@@ -164,17 +164,25 @@ def initialize():
     Initialize the qna_chain for a user.
     """
     global qna_chain
+    
+    qna_chain = 0
+
     # NEED to authenticate the user here
     yt_link = request.json.get('yt_link', '')
     valid, id = is_valid_yt(yt_link)
     if valid:
         metadata = get_metadata(id)
+        try:
+            os.remove('./transcript.txt')
+        except:
+            print("No transcript file to remove.")
+            
         save_transcript(id)
 
         # Initialize qna_chain for the user
-        qna_chain = load_db("./transcript.txt", 'stuff',  5)
+        qna_chain = load_db("./transcript.txt", 'stuff',  10)
 
-        os.remove('./transcript.txt')
+        # os.remove('./transcript.txt')
         
         return jsonify({"status": "success", 
                         "message": "qna_chain initialized.",

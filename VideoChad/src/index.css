@@ -9,7 +9,9 @@
 		width: 100%;
 	}
 }
-
+.markdown > * {
+	all: revert;
+}
 .typing {
 	width: 100%;
 	white-space: nowrap;

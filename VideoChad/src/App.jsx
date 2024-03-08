@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import Navbar from "./Components/Navbar";
 import axios from "axios";
 import YouTube from "react-youtube";
-import Markdown from "react-markdown";
+import ReactMarkdown from "react-markdown";
 
 function App() {
 	const navigate = useNavigate();
@@ -69,16 +69,19 @@ function App() {
 				formattedMessages.push(message);
 			}
 			console.log("Formatted", formattedMessages);
+			const formattedInput =
+				userInput +
+				"?. In bulleted points, respond with the key points of the answer for the question and provide a concise answer in markdown format highlighting the keypoints and features using markdown.";
 			const response = await axios.post("http://localhost:5000/response", {
-				query: userInput,
+				query: formattedInput,
 				chat_history: formattedMessages,
 			});
 			console.log("Answer", response.data.answer);
 			console.log("Time sta", response.data.timestamps);
-			setTimestamps(response.data.timestamps);
+			setTimestamps(response.data.timestamps.slice(0, 5));
 			setMessages([
 				...messages,
-				{ role: "user", content: userInput },
+				{ role: "user", content: userInput + "?" },
 				{ role: "assistant", content: response.data.answer },
 			]);
 
@@ -101,15 +104,24 @@ function App() {
 	useEffect(() => {
 		async function fetchSummary() {
 			try {
-				console.log("Formatted", formattedMessages);
-				setUserInput("Summarize the video for me!");
+				console.log("Summarizing...");
+				setLoading(true);
 				const response = await axios.post("http://localhost:5000/response", {
-					query: "Summarize the video for me!",
-					chat_history: formattedMessages,
+					query:
+						"You are a Intelligent Tutor. Your task is to smartly summarize the the Youtube video transcript provided as context. \
+					Don't mention the transcript as 'transcript' but refer to it as Youtube video or just video while having a conversation with a student.\
+					Give me in-depth response for the summaray part only... something like : Short-Intro to what is being said in the video transcript.\
+					5 - KEY points to understand in bullet point format... Conclusion as to what can be learnt from this video transcript....\
+					Only the Conclusion in the summary should be application perspective.... \
+					From thsi point provide all the responses in this chat in Markdown Format highlighting keypoints and fetures. Also for every response you have to give introduction, keypoints and conclusion. Keep in mind that the markdown syntax should be followed for every response that you will give in fututre.",
+					chat_history: "",
 				});
 				console.log("Answer", response.data.answer);
 				console.log("Time stamp", response.data.timestamps);
-				setTimestamps(response.data.timestamps);
+
+				// setTimestamps(response.data.timestamps);
+				// only set first five timestamps
+				setTimestamps(response.data.timestamps.slice(0, 5));
 				setMessages([
 					...messages,
 					{ role: "user", content: userInput },
@@ -163,73 +175,78 @@ function App() {
 					</div>
 				</div>
 
-				<div className="flex flex-col p-2  justify-between lg:col-span-1 col-span-2 overflow-auto">
-					<div className="flex items-center justify-start flex-col max-h-3/5">
-						<h1 className="p-2 text-2xl text-gray-800 font-semibold">
-							📺 Chat with the Video 📺
-						</h1>
-						<div
-							ref={endOfMessagesRef}
-							className="flex flex-col m-4 overflow-y-scroll w-full max-h-4/5 border text-xl border-gray-300 rounded-md p-4 bg-gray-100"
-							id="chat-message"
-						>
-							<div>
-								<Markdown>{markdown}</Markdown>
-							</div>
-							{messages.map((msg, idx) => (
-								<div
-									key={idx}
-									className={` ${
-										msg.role === "user"
-											? "text-indigo-600 font-bold mt-3"
-											: "text-gray-700  "
-									}`}
-									ref={idx === messages.length - 1 ? endOfMessagesRef : null}
-								>
-									<Markdown>{msg.content}</Markdown>
-									{/* Show buttopns of 3 timestamps  */}
-									{msg.role === "assistant" && (
-										<div className="flex space-x-4 mt-2">
-											{timestamps.map((time, idx) => (
-												<button
-													key={idx}
-													className="bg-indigo-200 hover:bg-indigo-400  text-white py-1 px-3 rounded-lg"
-													onClick={() => {
-														if (player) {
-															player.seekTo(time);
-															player.pauseVideo();
-														}
-													}}
-												>
-													{"Ref "}
-													{idx + 1}
-												</button>
-											))}
-										</div>
-									)}
+				<div className="flex flex-col  justify-between lg:col-span-1 col-span-2 overflow-auto">
+					<h1 className="p-2 text-2xl text-gray-800 font-semibold text-center">
+						📺 Chat with the Video 📺
+					</h1>
+					<div className="p-2">
+						<div className="flex items-center justify-start flex-col max-h-3/5">
+							<div
+								ref={endOfMessagesRef}
+								className=" p-4 flex flex-col m-4 w-full max-h-4/5 border text-xl border-gray-300 rounded-md bg-gray-100"
+								id="chat-message"
+							>
+								<div>
+									<ReactMarkdown>{"# Markdown"}</ReactMarkdown>
 								</div>
-							))}
+								{messages.map((msg, idx) => (
+									<div
+										key={idx}
+										className={` ${
+											msg.role === "user"
+												? "text-indigo-600 font-bold mt-3"
+												: "text-gray-700  "
+										}`}
+										ref={idx === messages.length - 1 ? endOfMessagesRef : null}
+									>
+										<ReactMarkdown className="markdown">
+											{msg.content}
+										</ReactMarkdown>
+										{/* Show buttopns of 3 timestamps  */}
+										{/* {msg.content} */}
+										{msg.role === "assistant" && (
+											<div className="flex space-x-4 mt-2">
+												{timestamps.map((time, idx) => (
+													<button
+														key={idx}
+														className="bg-indigo-200 hover:bg-indigo-400  text-white py-1 px-3 rounded-lg"
+														onClick={() => {
+															if (player) {
+																player.seekTo(time);
+																player.pauseVideo();
+															}
+														}}
+													>
+														{"Ref "}
+														{idx + 1}
+													</button>
+												))}
+											</div>
+										)}
+									</div>
+								))}
+							</div>
 						</div>
 					</div>
 					<div
-						className="mt-16 p-4 absolute w-full bg-white"
+						className="p-2 absolute w-full bg-white"
 						id="chat-input"
 						style={{ position: "sticky", bottom: 0 }}
 					>
-						<div className="flex items-center justify-end w-full">
+						<div className="flex items-center justify-end w-full space-x-4">
 							<input
 								value={userInput}
 								onChange={(e) => setUserInput(e.target.value)}
 								onKeyPress={handleKeyPress}
 								placeholder="🤔 Ask me anything! ... "
-								className="flex-grow w-5/6 px-16 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:border-indigo-500"
+								className="flex-grow w-5/6 px-8 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:border-indigo-500"
 							/>
-							{loading && (
+							{/* {loading && (
 								<div
 									style={{ position: "relative", right: "640px", top: "50%" }}
 									className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-purple-500"
 								></div>
-							)}
+							)} */}
 							<button
 								onClick={sendMessage}
 								className={`px-2.5 py-2.5 bg-indigo-600 text-white rounded-md font-semibold text-lg hover:bg-indigo-700 focus:outline-none focus:ring ${
