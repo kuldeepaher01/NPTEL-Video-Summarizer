@@ -14,7 +14,7 @@ function Navbar() {
 						<h1 className="p-2">
 							<span className="text-white" onClick={handleClick}>
 								{" "}
-								VideoChad{" "}
+								VideoChad🗿{" "}
 							</span>
 						</h1>
 					</div>

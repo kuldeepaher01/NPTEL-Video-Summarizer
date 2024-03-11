@@ -4,12 +4,16 @@ import Navbar from "./Components/Navbar";
 import axios from "axios";
 import YouTube from "react-youtube";
 import ReactMarkdown from "react-markdown";
+import { fetchTranscript } from "youtube-subtitle-transcript";
 
 function App() {
 	const navigate = useNavigate();
 	const [messages, setMessages] = useState([]);
 	const [userInput, setUserInput] = useState("");
 	const [timestamps, setTimestamps] = useState([]);
+	const [transcript, setTranscript] = useState("");
+	const [loading, setLoading] = useState(false);
+	const [transcriptStatus, setTranscriptStatus] = useState(false);
 	const location = useLocation();
 	const videoLink = location.state?.videoLink;
 	const metaData = location.state?.metaData;
@@ -17,12 +21,31 @@ function App() {
 	const endOfMessagesRef = useRef(null);
 	const [player, setPlayer] = React.useState(null);
 
-	const handleClick = () => {
-		console.log("Clicked");
-		if (player) {
-			player.seekTo(120);
-			player.pauseVideo();
-			console.log("Seeking to  120");
+	const handleClick = async () => {
+		if (!loading) {
+			try {
+				const response = await axios.post("http://localhost:5000/transcript");
+				// console.log("Transcript", response.data.transcript);
+				const temp = response.data.transcript; // This should now correctly reflect the updated state
+				// console.log("Tt", temp);
+				const element = document.createElement("a");
+				const file = new Blob([temp], { type: "text/plain" }); // Use the fetched transcript directly
+				element.href = URL.createObjectURL(file);
+				element.download = "transcript.txt";
+				document.body.appendChild(element); // Required for this to work in FireFox
+				element.click();
+			} catch (error) {
+				window.alert("Failed to fetch transcript:", error);
+			}
+		}
+	};
+
+	const fetch = async () => {
+		try {
+			setTranscript(response.data.transcript);
+			setTranscriptStatus(response.data.status);
+		} catch (error) {
+			console.error("Failed to fetch transcript:", error);
 		}
 	};
 
@@ -40,20 +63,18 @@ function App() {
 		scrollToBottom();
 	}, [messages]);
 
-	const [loading, setLoading] = useState(false);
-
 	console.log(videoLink);
 	useEffect(() => {
 		function convertToEmbedUrl(watchUrl) {
 			return watchUrl.replace("/watch?v=", "/embed/");
 		}
+
 		if (videoLink) {
-			// setEmbedLink(convertToEmbedUrl(videoLink));
-			// setEmbedLink(convertToEmbedUrl(videoLink));
 			setVideoId(videoLink.split("v=")[1]);
+
 			console.log(videoId);
 		} else {
-			// navigate("/");
+			navigate("/");
 		}
 	}, []);
 
@@ -69,11 +90,11 @@ function App() {
 				formattedMessages.push(message);
 			}
 			console.log("Formatted", formattedMessages);
-			const formattedInput =
-				userInput +
-				"?. In bulleted points, respond with the key points of the answer for the question and provide a concise answer in markdown format highlighting the keypoints and features using markdown.";
+			// const formattedInput =
+			// 	userInput +
+			// 	"?. In bulleted points, respond with the key points of the answer for the question and provide a concise answer in markdown format highlighting the keypoints and features using markdown.";
 			const response = await axios.post("http://localhost:5000/response", {
-				query: formattedInput,
+				query: userInput,
 				chat_history: formattedMessages,
 			});
 			console.log("Answer", response.data.answer);
@@ -164,14 +185,17 @@ function App() {
 							onReady={onPlayerReady}
 						/>
 
-						{/* <div className="flex justify-center items-center mt-32">
+						<div className="flex justify-center items-center mt-16">
 							<button
-								className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-2.5 rounded-lg"
+								className={`px-2.5 py-2.5 bg-indigo-600 text-white rounded-md font-semibold text-lg hover:bg-indigo-700 focus:outline-none focus:ring ${
+									loading && "cursor-not-allowed opacity-35 "
+								}`}
+								disabled={loading}
 								onClick={handleClick}
 							>
-								Quiz Me! ⭐🧐
+								Download transcript. 📥
 							</button>
-						</div> */}
+						</div>
 					</div>
 				</div>
 
@@ -186,9 +210,9 @@ function App() {
 								className=" p-4 flex flex-col m-4 w-full max-h-4/5 border text-xl border-gray-300 rounded-md bg-gray-100"
 								id="chat-message"
 							>
-								<div>
+								{/* <div>
 									<ReactMarkdown>{"# Markdown"}</ReactMarkdown>
-								</div>
+								</div> */}
 								{messages.map((msg, idx) => (
 									<div
 										key={idx}
@@ -247,7 +271,7 @@ function App() {
 									className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-purple-500"
 								></div>
 							)} */}
-							<button
+							{/* <button
 								onClick={sendMessage}
 								className={`px-2.5 py-2.5 bg-indigo-600 text-white rounded-md font-semibold text-lg hover:bg-indigo-700 focus:outline-none focus:ring ${
 									loading && "cursor-not-allowed opacity-35 "
@@ -255,6 +279,33 @@ function App() {
 								disabled={loading}
 							>
 								📤Send
+							</button> */}
+							<button
+								onClick={sendMessage}
+								disabled={loading}
+								type="button"
+								className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-3 py-2.5 text-center me-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 inline-flex items-center"
+							>
+								{loading && (
+									<svg
+										aria-hidden="true"
+										role="status"
+										class="inline w-4 h-4 me-3 text-white animate-spin"
+										viewBox="0 0 100 101"
+										fill="none"
+										xmlns="http://www.w3.org/2000/svg"
+									>
+										<path
+											d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
+											fill="#E5E7EB"
+										/>
+										<path
+											d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
+											fill="currentColor"
+										/>
+									</svg>
+								)}
+								{loading ? "Loading..." : "📤 Send"}
 							</button>
 						</div>
 					</div>

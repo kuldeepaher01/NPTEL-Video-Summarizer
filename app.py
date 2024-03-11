@@ -180,7 +180,7 @@ def initialize():
         save_transcript(id)
 
         # Initialize qna_chain for the user
-        qna_chain = load_db("./transcript.txt", 'stuff',  10)
+        qna_chain = load_db("./transcript.txt", 'stuff',  5)
 
         # os.remove('./transcript.txt')
         
@@ -227,10 +227,22 @@ def response():
         pattern = r'~(\d+)~'
         backlinked_docs = [response['source_documents'][i].page_content for i in range(len(response['source_documents']))]
         timestamps = list(map(lambda s: int(re.search(pattern, s).group(1)) if re.search(pattern, s) else None, backlinked_docs))
-    
+        
         return jsonify(dict(timestamps=timestamps, answer=response['answer']))
 
     return jsonify(response['answer'])
-
+@app.route('/transcript', methods=['POST'])
+@cross_origin()
+def send_transcript():
+    """
+    Send the transcript of the video.
+    """
+    try:
+        with open('transcript.txt', 'r') as file:
+            transcript = file.read()
+        return jsonify({"status": "success", "transcript": transcript})
+    except:
+        return jsonify({"status": "error", "message": "Transcript not found."})
+    
 if __name__ == '__main__':
     app.run(debug=True)
