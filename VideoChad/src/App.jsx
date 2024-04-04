@@ -4,9 +4,27 @@ import Navbar from "./Components/Navbar";
 import axios from "axios";
 import YouTube from "react-youtube";
 import ReactMarkdown from "react-markdown";
-import { fetchTranscript } from "youtube-subtitle-transcript";
+// import { fetchTranscript } from "youtube-subtitle-transcript";
+// import Mindmap from "./Components/Mindmap";
+import ForceGraph2D from "react-force-graph-2d";
+import ForceGraph3D from "react-force-graph-3d";
+import SpriteText from "three-spritetext";
 
+function genRandomTree(N = 90, reverse = false) {
+	return {
+	  nodes: [...Array(N).keys()].map((i) => ({ id: i })),
+	  links: [...Array(N).keys()]
+		.filter((id) => id)
+		.map((id) => ({
+		  [reverse ? "target" : "source"]: id,
+		  [reverse ? "source" : "target"]: Math.round(Math.random() * (id - 1))
+		}))
+	};
+  }
 function App() {
+	const { useRef } = React;
+	const fgRef = useRef();
+	
 	const navigate = useNavigate();
 	const [messages, setMessages] = useState([]);
 	const [userInput, setUserInput] = useState("");
@@ -20,6 +38,30 @@ function App() {
 	const [videoId, setVideoId] = useState("");
 	const endOfMessagesRef = useRef(null);
 	const [player, setPlayer] = React.useState(null);
+
+	// /////////////// data for mindmap ///////////////////////
+	const [data, setData] = useState({ nodes: [{ id: 0 }], links: [] });
+	
+	// /////////////// data for mindmap ///////////////////////
+
+	// after every 5 seconds add one node to data
+	// useEffect(() => {
+    //     setInterval(() => {
+    //       // Add a new connected node every second
+    //       setData(({ nodes, links }) => {
+    //         const id = nodes.length;
+    //         return {
+    //           nodes: [...nodes, { id }],
+    //           links: [...links, { source: id, target: Math.round(Math.random() * (id-1)) }]
+    //         };
+    //       });
+    //     }, 5000);
+	// 	return () => {
+	// 		clearInterval();
+	// 	}
+    //   }, []);
+
+	
 
 	const handleClick = async () => {
 		if (!loading) {
@@ -74,7 +116,8 @@ function App() {
 
 			console.log(videoId);
 		} else {
-			navigate("/");
+			setVideoId("QVKj3LADCnA")
+			// navigate("/");
 		}
 	}, []);
 
@@ -159,6 +202,44 @@ function App() {
 		fetchSummary();
 	}, []);
 
+	const CameraOrbit = () => {
+		
+	
+		return (
+		  <ForceGraph3D
+			// ref={fgRef}
+			graphData={data}
+			// dynamically give width and height based on vh and vw
+			width={window.innerWidth/2 -20}
+			height={window.innerHeight/3}
+			// nodeAutoColorBy="id"
+			backgroundColor="#f5f5f5"
+			enableNodeDrag={false}
+			// nodeLabel={(node) => `${node.name}`}
+			// nodeVal={(node) => 2}
+			nodeThreeObject={(node) => {
+
+				const sprite = new SpriteText(node.id);
+				sprite.color = node.color;
+				sprite.textHeight = 8;
+				return sprite;
+									  }}
+			linkColor={() => "black"}
+			linkDirectionalParticleColor={() => "red"}
+			linkDirectionalParticleWidth={6}
+			linkHoverPrecision={10}
+			onLinkClick={(link) => fgRef.current.emitParticle(link)}
+			// reset position of camera on double click
+			onNodeClick={(node) => {
+				fgRef.current.centerAt(node.x, node.y, node.z, 1000);
+			}
+			}
+			
+			
+		  />
+		);
+	  };
+
 	return (
 		<div id="App" className="w-full h-screen">
 			<div>
@@ -166,7 +247,7 @@ function App() {
 			</div>
 			<div id="chat-ui" className="grid grid-cols-2 divide-x-2 h-5/6">
 				<div className="flex flex-col  lg:col-span-1 col-span-2">
-					<div className=" w-full h-96 justify-center items-center">
+					<div className=" w-full h-80 justify-center items-center">
 						<h1 className="text-gray-800 font-semibold text-2xl ml-2 mt-2">
 							{metaData}
 						</h1>
@@ -176,7 +257,7 @@ function App() {
 							videoId={videoId}
 							opts={{
 								width: "100%",
-								height: "120%",
+								height: "100%",
 								playerVars: {
 									autoplay: 0,
 									start: 40,
@@ -185,7 +266,7 @@ function App() {
 							onReady={onPlayerReady}
 						/>
 
-						<div className="flex justify-center items-center mt-16">
+						{/* <div className="flex justify-center items-center mt-2">
 							<button
 								className={`px-2.5 py-2.5 bg-indigo-600 text-white rounded-md font-semibold text-lg hover:bg-indigo-700 focus:outline-none focus:ring ${
 									loading && "cursor-not-allowed opacity-35 "
@@ -195,6 +276,15 @@ function App() {
 							>
 								Download transcript. 📥
 							</button>
+						</div> */}
+						<div className="ml-2">
+							{/* <h1>
+								Mindmap
+							</h1> */}
+							<h1 className="text-gray-800 font-semibold text-2xl ml-2 mt-2">
+								🧠 Mindmap 
+							</h1>
+						<CameraOrbit />
 						</div>
 					</div>
 				</div>
@@ -290,7 +380,7 @@ function App() {
 									<svg
 										aria-hidden="true"
 										role="status"
-										class="inline w-4 h-4 me-3 text-white animate-spin"
+										className="inline w-4 h-4 me-3 text-white animate-spin"
 										viewBox="0 0 100 101"
 										fill="none"
 										xmlns="http://www.w3.org/2000/svg"
