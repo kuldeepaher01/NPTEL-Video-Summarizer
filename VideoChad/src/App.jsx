@@ -10,17 +10,6 @@ import ForceGraph2D from "react-force-graph-2d";
 import ForceGraph3D from "react-force-graph-3d";
 import SpriteText from "three-spritetext";
 
-function genRandomTree(N = 90, reverse = false) {
-	return {
-	  nodes: [...Array(N).keys()].map((i) => ({ id: i })),
-	  links: [...Array(N).keys()]
-		.filter((id) => id)
-		.map((id) => ({
-		  [reverse ? "target" : "source"]: id,
-		  [reverse ? "source" : "target"]: Math.round(Math.random() * (id - 1))
-		}))
-	};
-  }
 function App() {
 	const { useRef } = React;
 	const fgRef = useRef();
@@ -39,30 +28,8 @@ function App() {
 	const endOfMessagesRef = useRef(null);
 	const [player, setPlayer] = React.useState(null);
 
-	// /////////////// data for mindmap ///////////////////////
-	const [data, setData] = useState({ nodes: [{ id: 0 }], links: [] });
 	
-	// /////////////// data for mindmap ///////////////////////
-
-	// after every 5 seconds add one node to data
-	// useEffect(() => {
-    //     setInterval(() => {
-    //       // Add a new connected node every second
-    //       setData(({ nodes, links }) => {
-    //         const id = nodes.length;
-    //         return {
-    //           nodes: [...nodes, { id }],
-    //           links: [...links, { source: id, target: Math.round(Math.random() * (id-1)) }]
-    //         };
-    //       });
-    //     }, 5000);
-	// 	return () => {
-	// 		clearInterval();
-	// 	}
-    //   }, []);
-
 	
-
 	const handleClick = async () => {
 		if (!loading) {
 			try {
@@ -81,7 +48,7 @@ function App() {
 			}
 		}
 	};
-
+	
 	const fetch = async () => {
 		try {
 			setTranscript(response.data.transcript);
@@ -90,7 +57,7 @@ function App() {
 			console.error("Failed to fetch transcript:", error);
 		}
 	};
-
+	
 	const onPlayerReady = (event) => {
 		setPlayer(event.target);
 		console.log("Player is ready");
@@ -104,7 +71,7 @@ function App() {
 	useEffect(() => {
 		scrollToBottom();
 	}, [messages]);
-
+	
 	console.log(videoLink);
 	useEffect(() => {
 		function convertToEmbedUrl(watchUrl) {
@@ -113,7 +80,7 @@ function App() {
 
 		if (videoLink) {
 			setVideoId(videoLink.split("v=")[1]);
-
+			
 			console.log(videoId);
 		} else {
 			setVideoId("QVKj3LADCnA")
@@ -148,7 +115,7 @@ function App() {
 				{ role: "user", content: userInput + "?" },
 				{ role: "assistant", content: response.data.answer },
 			]);
-
+			
 			console.log(messages);
 			setUserInput("");
 			setLoading(false);
@@ -156,7 +123,7 @@ function App() {
 			console.log(error);
 		}
 	};
-
+	
 	const handleKeyPress = (e) => {
 		if (e.key === "Enter" && userInput.trim() !== "") {
 			sendMessage();
@@ -164,7 +131,7 @@ function App() {
 		}
 	};
 	const markdown = "";
-
+	
 	useEffect(() => {
 		async function fetchSummary() {
 			try {
@@ -172,7 +139,7 @@ function App() {
 				setLoading(true);
 				const response = await axios.post("http://localhost:5000/response", {
 					query:
-						"You are a Intelligent Tutor. Your task is to smartly summarize the the Youtube video transcript provided as context. \
+					"You are a Intelligent Tutor. Your task is to smartly summarize the the Youtube video transcript provided as context. \
 					Don't mention the transcript as 'transcript' but refer to it as Youtube video or just video while having a conversation with a student.\
 					Give me in-depth response for the summaray part only... something like : Short-Intro to what is being said in the video transcript.\
 					5 - KEY points to understand in bullet point format... Conclusion as to what can be learnt from this video transcript....\
@@ -191,7 +158,7 @@ function App() {
 					{ role: "user", content: userInput },
 					{ role: "assistant", content: response.data.answer },
 				]);
-
+				
 				console.log(messages);
 				setUserInput("");
 				setLoading(false);
@@ -199,26 +166,143 @@ function App() {
 				console.log(error);
 			}
 		}
-		fetchSummary();
+		return () => {
+			// fetch 
+			fetchSummary();
+		}
 	}, []);
-
-	const CameraOrbit = () => {
-		
 	
+	// /////////////// data for mindmap ///////////////////////
+	const [data, setData] = useState();
+	
+	useEffect(() => {
+		async function fetchMindMap() {
+			try {
+				console.log("Mind Mapping...");
+				setLoading(true);
+				const response = await axios.post("http://localhost:5000/response", {
+					query:
+						`Smart Tutor, please provide a consize creative Mind Map!... The Idea is to Show an intricate, easy to understand (in terms of concept "linking") mind map, based on the provided context\
+						so that the users can understand the video --key contepts-- helping them to know what the video is discussing in-depth!\
+						We want your response in json object for example: \
+						{
+							"nodes": [
+							{
+							"id": "Main Concept",
+							"group": 1,
+							"size": 30
+							},
+							{
+							"id": "Sub-Concept 1",
+							"group": 2,
+							"size": 20
+							},
+							{
+							"id": "Sub-Concept 2",
+							"group": 2,
+							"size": 20
+							},
+							{
+							"id": "Sub-Concept 3",
+							"group": 2,
+							"size": 20
+							},
+							{
+							"id": "Sub-Concept 4",
+							"group": 2,
+							"size": 20
+							},
+							{
+							"id": "Sub-Concept 5",
+							"group": 2,
+							"size": 20
+							},
+							{
+							"id": "Sub-Concept 6",
+							"group": 2,
+							"size": 20
+							},
+							{
+							"id":"Sub-Sub-Concept 7",
+							"group":2,
+							"size": 15
+							}
+							],
+							"links": [
+							{
+							"source": "Main Concept",
+							"target": "Sub-Concept 1",
+							"value": 10
+							},
+							{
+							"source": "Main Concept",
+							"target": "Sub-Concept 2",
+							"value": 9
+							},
+							{
+							"source": "Main Concept",
+							"target": "Sub-Concept 3",
+							"value": 8
+							},
+							{
+							"source": "Main Concept",
+							"target": "Sub-Concept 4",
+							"value": 7
+							},
+							{
+							"source": "Main Concept",
+							"target": "Sub-Concept 5",
+							"value": 6
+							},
+							{
+							"source": "Main Concept",
+							"target": "Sub-Concept 6",
+							"value": 5
+							},
+							{
+							"source": "Sub-Concept 6",
+							"target": "Sub-Sub-Concept 7",
+							"value": 5	
+							}
+							]
+							}
+							This structure can be used as a template or guide to create more specific mind maps based on the requirements of the youtube video transcript provided. You can customize the node names, group assignments, and link weights to reflect the content and relationships in your mind map.
+							only json object of mindmap is expected as output`,
+					chat_history: "",
+				});
+				console.log("MindMap: ", response.data.answer);
+				setData(JSON.parse(response.data.answer));
+				setLoading(false);
+			} catch (error) {
+				console.log(error);
+			}
+		}
+		// fetchMindMap();
+		return () => {
+			// fetch 
+			fetchMindMap();
+		}
+	}, []);
+	// /////////////// data for mindmap ///////////////////////
+
+	const CameraOrbit = () => {	
 		return (
-		  <ForceGraph3D
-			// ref={fgRef}
+			<ForceGraph3D
+			ref={fgRef}
 			graphData={data}
 			// dynamically give width and height based on vh and vw
 			width={window.innerWidth/2 -20}
 			height={window.innerHeight/3}
-			// nodeAutoColorBy="id"
+			nodeAutoColorBy="id"
+
+
+			
+			
 			backgroundColor="#f5f5f5"
-			enableNodeDrag={false}
 			// nodeLabel={(node) => `${node.name}`}
 			// nodeVal={(node) => 2}
 			nodeThreeObject={(node) => {
-
+				
 				const sprite = new SpriteText(node.id);
 				sprite.color = node.color;
 				sprite.textHeight = 8;
@@ -240,6 +324,20 @@ function App() {
 		);
 	  };
 
+	const downloadMindmapSVG = () => {
+		console.log("Downloading SVG")
+		const svg = fgRef.current.exportSVG();
+		const blob = new Blob([svg], { type: "image/svg+xml" });
+		const url = URL.createObjectURL(blob);
+		const a = document.createElement
+		("a");
+		a.href = url;
+		a.download = "mindmap.svg";
+		a.click();
+		URL.revokeObjectURL(url);
+	}
+
+	
 	return (
 		<div id="App" className="w-full h-screen">
 			<div>
@@ -281,9 +379,15 @@ function App() {
 							{/* <h1>
 								Mindmap
 							</h1> */}
-							<h1 className="text-gray-800 font-semibold text-2xl ml-2 mt-2">
-								🧠 Mindmap 
-							</h1>
+							<button
+								className={`px-2.5 py-2.5 bg-indigo-600 text-white rounded-md font-semibold text-lg hover:bg-indigo-700 focus:outline-none focus:ring ${
+									loading && "cursor-not-allowed opacity-35 "
+								}`}
+								disabled={loading}
+								onClick={downloadMindmapSVG}
+							>
+								Download transcript. 📥
+							</button>
 						<CameraOrbit />
 						</div>
 					</div>
