@@ -28,12 +28,12 @@ function App() {
 	const endOfMessagesRef = useRef(null);
 	const [player, setPlayer] = React.useState(null);
 
-	
+	const routebody = "http://localhost:5000";
 	
 	const handleClick = async () => {
 		if (!loading) {
 			try {
-				const response = await axios.post("http://localhost:5000/transcript");
+				const response = await axios.post(routebody.concat("/transcript"));
 				// console.log("Transcript", response.data.transcript);
 				const temp = response.data.transcript; // This should now correctly reflect the updated state
 				// console.log("Tt", temp);
@@ -83,7 +83,7 @@ function App() {
 			
 			console.log(videoId);
 		} else {
-			setVideoId("QVKj3LADCnA")
+			setVideoId("dQw4w9WgXcQ") // Easter Egg 🥚
 			// navigate("/");
 		}
 	}, []);
@@ -103,7 +103,7 @@ function App() {
 			// const formattedInput =
 			// 	userInput +
 			// 	"?. In bulleted points, respond with the key points of the answer for the question and provide a concise answer in markdown format highlighting the keypoints and features using markdown.";
-			const response = await axios.post("http://localhost:5000/response", {
+			const response = await axios.post(routebody.concat("/response"), {
 				query: userInput,
 				chat_history: formattedMessages,
 			});
@@ -137,14 +137,15 @@ function App() {
 			try {
 				console.log("Summarizing...");
 				setLoading(true);
-				const response = await axios.post("http://localhost:5000/response", {
+				const response = await axios.post(routebody.concat("/response"), {
 					query:
-					"You are a Intelligent Tutor. Your task is to smartly summarize the the Youtube video transcript provided as context. \
+					`You are a Intelligent Tutor. Your task is to smartly summarize the the Youtube video transcript provided as context. \
 					Don't mention the transcript as 'transcript' but refer to it as Youtube video or just video while having a conversation with a student.\
 					Give me in-depth response for the summaray part only... something like : Short-Intro to what is being said in the video transcript.\
 					5 - KEY points to understand in bullet point format... Conclusion as to what can be learnt from this video transcript....\
-					Only the Conclusion in the summary should be application perspective.... \
-					From thsi point provide all the responses in this chat in Markdown Format highlighting keypoints and fetures. Also for every response you have to give introduction, keypoints and conclusion. Keep in mind that the markdown syntax should be followed for every response that you will give in fututre.",
+					Only the Conclusion in the summary should be application perspective.... \ Also you are a friendly tutor, so if the question asked is casual or something not realted to the video transcript then answer it casually like a friend,
+					only if the question asked is casual or not realted to the context... more of general question ... only then you do this ... other wise stick to the context provided...
+					From thsi point provide all the responses in this chat in Markdown Format highlighting keypoints and fetures. Also for every response you have to give introduction, keypoints and conclusion. Keep in mind that the markdown syntax should be followed for every response that you will give in fututre.`,
 					chat_history: "",
 				});
 				console.log("Answer", response.data.answer);
@@ -180,10 +181,11 @@ function App() {
 			try {
 				console.log("Mind Mapping...");
 				setLoading(true);
-				const response = await axios.post("http://localhost:5000/response", {
+				const response = await axios.post(routebody.concat("/response"), {
 					query:
 						`Smart Tutor, please provide a consize creative Mind Map!... The Idea is to Show an intricate, easy to understand (in terms of concept "linking") mind map, based on the provided context\
-						so that the users can understand the video --key contepts-- helping them to know what the video is discussing in-depth!\
+						so that the users can understand the video --key contepts-- helping them to know what the video is discussing in-depth!, remember not to over simplifiy the mind-map,\
+						WE can have beautiful looking mind map with branches of important points from the video...
 						We want your response in json object for example: \
 						{
 							"nodes": [
@@ -295,9 +297,6 @@ function App() {
 			height={window.innerHeight/3}
 			nodeAutoColorBy="id"
 
-
-			
-			
 			backgroundColor="#f5f5f5"
 			// nodeLabel={(node) => `${node.name}`}
 			// nodeVal={(node) => 2}

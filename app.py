@@ -213,7 +213,7 @@ def response():
     
     memory = chat_history
     query = req.get('query', '')
-    print(f"Query: {query}")
+    # print(f"Query: {query}")
 
     if memory is None:
         memory = []

@@ -128,7 +128,7 @@ const HomePage = () => {
 										Chat with Youtube videos! 🎉 Created by 
 										{/* add href anchor for name and github */}
 										<a
-											href="https://github.com/foolmalhar"
+											href="https://github.com/MaxxCode8"
 											className="text-indigo-500 hover:underline"
 										>
 											{" "}
